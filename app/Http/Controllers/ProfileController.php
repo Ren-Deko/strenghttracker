@@ -2,67 +2,59 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Profile;
+use App\Http\Requests\ProfileUpdateRequest;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    // Display a listing of profiles
-    public function index()
+    /**
+     * Display the user's profile form.
+     */
+    public function edit(Request $request): View
     {
-        $profiles = Profile::all();
-        return view('profiles.index', compact('profiles'));
+        return view('profile.edit', [
+            'user' => $request->user(),
+        ]);
     }
 
-    // Show the form for creating a new profile
-    public function create()
+    /**
+     * Update the user's profile information.
+     */
+    public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        return view('profiles.create');
+        $request->user()->fill($request->validated());
+
+        if ($request->user()->isDirty('email')) {
+            $request->user()->email_verified_at = null;
+        }
+
+        $request->user()->save();
+
+        return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
-    // Store a newly created profile in the database
-    public function store(Request $request)
+    /**
+     * Delete the user's account.
+     */
+    public function destroy(Request $request): RedirectResponse
     {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'first_name' => 'required|max:255',
-            'last_name' => 'required|max:255',
-            // Add validation for other fields
+        $request->validateWithBag('userDeletion', [
+            'password' => ['required', 'current_password'],
         ]);
 
-        Profile::create($request->all());
-        return redirect()->route('profiles.index')->with('success', 'Profile created successfully.');
-    }
+        $user = $request->user();
 
-    // Display the specified profile
-    public function show(Profile $profile)
-    {
-        return view('profiles.show', compact('profile'));
-    }
+        Auth::logout();
 
-    // Show the form for editing the specified profile
-    public function edit(Profile $profile)
-    {
-        return view('profiles.edit', compact('profile'));
-    }
+        $user->delete();
 
-    // Update the specified profile in the database
-    public function update(Request $request, Profile $profile)
-    {
-        $request->validate([
-            'first_name' => 'required|max:255',
-            'last_name' => 'required|max:255',
-            // Add validation for other fields
-        ]);
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-        $profile->update($request->all());
-        return redirect()->route('profiles.index')->with('success', 'Profile updated successfully.');
-    }
-
-    // Remove the specified profile from the database
-    public function destroy(Profile $profile)
-    {
-        $profile->delete();
-        return redirect()->route('profiles.index')->with('success', 'Profile deleted successfully.');
+        return Redirect::to('/');
     }
 }

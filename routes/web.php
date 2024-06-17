@@ -1,23 +1,20 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ExerciseController;
-use App\Http\Controllers\WorkoutController;
-use App\Http\Controllers\PredefinedWorkoutController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;
 
-// Profiles
-Route::resource('profiles', ProfileController::class);
+Route::get('/', function () {
+    return view('welcome');
+});
 
-// Exercises
-Route::resource('exercises', ExerciseController::class);
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
-// Workouts
-Route::resource('workouts', WorkoutController::class);
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
 
-// Predefined Workouts
-Route::resource('predefined_workouts', PredefinedWorkoutController::class);
-
-// Home
-Route::get('/', [HomeController::class, 'index'])->name('home');
+require __DIR__.'/auth.php';
