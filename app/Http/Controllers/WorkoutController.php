@@ -1,70 +1,77 @@
 <?php
 
+// app/Http/Controllers/WorkoutController.php
+
 namespace App\Http\Controllers;
 
-use App\Models\Workout;
 use Illuminate\Http\Request;
+use App\Models\WorkoutType;
+use App\Models\WorkoutSession;
+use App\Models\Exercise;
+use Illuminate\Support\Facades\Auth;
 
 class WorkoutController extends Controller
 {
-    // Display a listing of workouts
     public function index()
     {
-        $workouts = Workout::all();
-        return view('workouts.index', compact('workouts'));
+        $workoutTypes = WorkoutType::all();
+        return view('workouts.index', compact('workoutTypes'));
     }
 
-    // Show the form for creating a new workout
-    public function create()
+    public function showWorkout(WorkoutType $workoutType)
     {
-        return view('workouts.create');
+        $workoutType->load('exercises');
+        $exercises = Exercise::all();
+        return view('workouts.exercises', compact('workoutType', 'exercises'));
     }
 
-    // Store a newly created workout in the database
-    public function store(Request $request)
+    public function addExercise(Request $request, WorkoutType $workoutType)
     {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'workout_date' => 'required|date',
-            'duration' => 'nullable|integer',
-            'intensity' => 'nullable|string'
+        $workoutType->exercises()->attach($request->exercise_id);
+
+        return redirect()->route('workouts.showWorkout', $workoutType->id);
+    }
+
+    public function removeExercise(WorkoutType $workoutType, Exercise $exercise)
+    {
+        $workoutType->exercises()->detach($exercise->id);
+
+        return redirect()->route('workouts.showWorkout', $workoutType->id);
+    }
+
+    public function startWorkout(WorkoutType $workoutType)
+    {
+        $workoutType->load('exercises');
+        return view('workouts.start', compact('workoutType'));
+    }
+
+    public function saveWorkoutSession(Request $request, WorkoutType $workoutType)
+    {
+        $session = WorkoutSession::create([
+            'workout_type_id' => $workoutType->id,
+            'user_id' => Auth::id(),
+            'workout_date' => now(),
+            'duration' => $request->duration,
+            'intensity' => $request->intensity,
         ]);
 
-        Workout::create($request->all());
-        return redirect()->route('workouts.index')->with('success', 'Workout created successfully.');
+        foreach ($workoutType->exercises as $exercise) {
+            $session->exercises()->attach($exercise->id, [
+                'sets' => $request->sets[$exercise->id],
+                'reps' => $request->reps[$exercise->id],
+                'weight' => $request->weight[$exercise->id],
+            ]);
+        }
+
+        return redirect()->route('workouts.showWorkoutSessions');
     }
 
-    // Display the specified workout
-    public function show(Workout $workout)
+    public function showWorkoutSessions()
     {
-        return view('workouts.show', compact('workout'));
+        $workoutSessions = WorkoutSession::with('workout_type', 'exercises')->where('user_id', Auth::id())->get();
+        return view('workouts.sessions', compact('workoutSessions'));
     }
-
-    // Show the form for editing the specified workout
-    public function edit(Workout $workout)
-    {
-        return view('workouts.edit', compact('workout'));
-    }
-
-    // Update the specified workout in the database
-    public function update(Request $request, Workout $workout)
-    {
-        $request->validate([
-            'workout_date' => 'required|date',
-            'duration' => 'nullable|integer',
-            'intensity' => 'nullable|string'
-        ]);
-
-        $workout->update($request->all());
-        return redirect()->route('workouts.index')->with('success', 'Workout updated successfully.');
-    }
-
-   // Remove the specified workout from the database
-   public function destroy(Workout $workout)
-   {
-       $workout->delete();
-       return redirect()->route('workouts.index')->with('success', 'Workout deleted successfully.');
-   }
 }
+
 
 

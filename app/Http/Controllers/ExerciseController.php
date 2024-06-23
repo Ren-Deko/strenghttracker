@@ -7,68 +7,93 @@ use Illuminate\Http\Request;
 
 class ExerciseController extends Controller
 {
-    // Display a listing of exercises
+    public function workout_sessions()
+    {
+        return $this->belongsToMany(WorkoutSession::class, 'exercise_workout')->withPivot('sets', 'reps', 'weight');
+    }
+
+    public function workout_types()
+    {
+        return $this->belongsToMany(WorkoutType::class, 'exercise_workout');
+    }
+
+    /**
+     * Display a listing of the exercises.
+     */
     public function index()
     {
         $exercises = Exercise::all();
         return view('exercises.index', compact('exercises'));
     }
 
-    // Show the form for creating a new exercise
+    /**
+     * Show the form for creating a new exercise.
+     */
     public function create()
     {
         return view('exercises.create');
     }
 
-    // Store a newly created exercise in the database
+    /**
+     * Store a newly created exercise in the database.
+     */
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
             'equipment_used' => 'nullable|string',
             'rest_period' => 'nullable|integer',
-            'difficulty' => 'nullable|string',
-            'target_body_part' => 'nullable|string'
+            'difficulty' => 'required|string',
+            'target_body_part' => 'required|string',
         ]);
 
         Exercise::create($request->all());
-        return redirect()->route('exercises.index')->with('success', 'Exercise created successfully.');
+
+        return redirect()->route('exercises.index')->with('success', 'Exercise added successfully.');
     }
 
-    // Display the specified exercise
-    public function show(Exercise $exercise)
+    /**
+     * Show the form for editing the specified exercise.
+     */
+    public function edit($id)
     {
-        return view('exercises.show', compact('exercise'));
-    }
-
-    // Show the form for editing the specified exercise
-    public function edit(Exercise $exercise)
-    {
+        $exercise = Exercise::findOrFail($id);
         return view('exercises.edit', compact('exercise'));
     }
 
-    // Update the specified exercise in the database
-    public function update(Request $request, Exercise $exercise)
+    /**
+     * Update the specified exercise in the database.
+     */
+    public function update(Request $request, $id)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
             'equipment_used' => 'nullable|string',
             'rest_period' => 'nullable|integer',
-            'difficulty' => 'nullable|string',
-            'target_body_part' => 'nullable|string'
+            'difficulty' => 'required|string',
+            'target_body_part' => 'required|string',
         ]);
 
+        $exercise = Exercise::findOrFail($id);
         $exercise->update($request->all());
+
         return redirect()->route('exercises.index')->with('success', 'Exercise updated successfully.');
     }
 
-    // Remove the specified exercise from the database
-    public function destroy(Exercise $exercise)
+    /**
+     * Remove the specified exercise from the database.
+     */
+    public function destroy($id)
     {
+        $exercise = Exercise::findOrFail($id);
         $exercise->delete();
+
         return redirect()->route('exercises.index')->with('success', 'Exercise deleted successfully.');
     }
 }
+
+
+
 

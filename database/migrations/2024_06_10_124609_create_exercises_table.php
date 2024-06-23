@@ -11,9 +11,11 @@ class CreateExercisesTable extends Migration
         Schema::create('exercises', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->text('description')->nullable();
+            $table->text('description');
             $table->string('equipment_used')->nullable();
-            $table->integer('rest_period')->nullable(); // rest period in seconds
+            $table->integer('rest_period')->nullable();
+            $table->string('difficulty');
+            $table->string('target_body_part');
             $table->timestamps();
         });
     }
@@ -23,4 +25,5 @@ class CreateExercisesTable extends Migration
         Schema::dropIfExists('exercises');
     }
 }
+
 
