@@ -4,11 +4,12 @@
 <style>
     .hero-section {
         background: url('/path/to/your-hero-image.jpg') no-repeat center center/cover;
-        color: #fff;
+        color: #000000;
         height: 75vh;
         display: flex;
         align-items: center;
         justify-content: center;
+        text-align: center;
     }
 
     .feature-icon {
@@ -42,7 +43,7 @@
 
 @section('content')
 <!-- Hero Section -->
-<div class="hero-section text-center">
+<div class="hero-section">
     <h1>Welcome to StrengthTracker</h1>
     <p>Track and optimize your workouts with precision and ease.</p>
     <a href="{{ route('register') }}" class="btn btn-primary btn-lg">Get Started</a>
