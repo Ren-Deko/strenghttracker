@@ -42,12 +42,21 @@
 @endsection
 
 @section('content')
+
+
+
 <!-- Hero Section -->
-<div class="hero-section">
-    <h1>Welcome to StrengthTracker</h1>
-    <p>Track and optimize your workouts with precision and ease.</p>
-    <a href="{{ route('register') }}" class="btn btn-primary btn-lg">Get Started</a>
-</div>
+<div class="container">
+    <div class="jumbotron text-center">
+        <h1>Welcome to StrengthTracker</h1>
+        <p>Track and optimize your workouts with precision and ease.</p>
+        @guest
+            <a href="{{ route('login') }}" class="btn btn-primary btn-lg">Login</a>
+            <a href="{{ route('register') }}" class="btn btn-secondary btn-lg">Register</a>
+        @else
+            <a href="{{ route('dashboard') }}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+        @endguest
+    </div>
 
 <!-- Features Section -->
 <div class="container text-center my-5">

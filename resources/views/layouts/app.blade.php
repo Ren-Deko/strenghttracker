@@ -13,6 +13,28 @@
     <div class="container">
         @yield('content')  <!-- This is where your home.blade.php content should be rendered -->
     </div>
-</body>
-</html>
+
+
+
+
+
+
+
+
+
+
+
+    
+   <!-- Scripts -->
+
+
+
+
+
+
+
+
+   <script src="{{ asset('js/app.js') }}"></script> <!-- Example: Including main app.js -->
+   @yield('scripts')  <!-- This line is crucial to render page-specific scripts -->
+
 

@@ -26,6 +26,12 @@ class Exercise extends Model
         return $this->belongsToMany(WorkoutType::class, 'exercise_workout_type');
     }
 
+    public function workoutSessions()
+    {
+        return $this->belongsToMany(WorkoutSession::class, 'exercise_workout_details')
+                    ->withPivot('set_number', 'reps', 'weight')
+                    ->withTimestamps();
+    }
 
 }
 

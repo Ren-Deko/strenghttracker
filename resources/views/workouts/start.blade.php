@@ -2,34 +2,29 @@
 
 @section('content')
 <div class="container">
-    <h1>Start {{ $workoutType->name }} Workout</h1>
+    <h1>Start Workout: {{ $workoutType->name }}</h1>
     <form method="POST" action="{{ route('workouts.saveWorkoutSession', $workoutType->id) }}">
         @csrf
-        <div class="mb-3">
-            <label for="duration" class="form-label">Duration (minutes)</label>
-            <input type="number" class="form-control" id="duration" name="duration" required>
-        </div>
-        <div class="mb-3">
-            <label for="intensity" class="form-label">Intensity</label>
-            <input type="text" class="form-control" id="intensity" name="intensity">
-        </div>
-        <h3>Exercises</h3>
         @foreach ($workoutType->exercises as $exercise)
-            <div class="mb-3">
-                <h4>{{ $exercise->name }}</h4>
-                <div class="row">
-                    <div class="col">
-                        <label for="sets_{{ $exercise->id }}" class="form-label">Sets</label>
-                        <input type="number" class="form-control" id="sets_{{ $exercise->id }}" name="sets[{{ $exercise->id }}]" required>
+            <div class="card mb-3">
+                <div class="card-header">
+                    {{ $exercise->name }}
+                </div>
+                <div class="card-body">
+                    <div id="exercise-{{ $exercise->id }}">
+                        <div class="set-group mb-3">
+                            <label>Set 1</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <input type="number" name="reps[{{ $exercise->id }}][]" class="form-control" placeholder="Reps" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="number" name="weight[{{ $exercise->id }}][]" class="form-control" placeholder="Weight" required>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col">
-                        <label for="reps_{{ $exercise->id }}" class="form-label">Reps</label>
-                        <input type="number" class="form-control" id="reps_{{ $exercise->id }}" name="reps[{{ $exercise->id }}]" required>
-                    </div>
-                    <div class="col">
-                        <label for="weight_{{ $exercise->id }}" class="form-label">Weight</label>
-                        <input type="number" class="form-control" id="weight_{{ $exercise->id }}" name="weight[{{ $exercise->id }}]" required>
-                    </div>
+                    <button type="button" class="btn btn-secondary btn-add-set" data-exercise-id="{{ $exercise->id }}">Add Set</button>
                 </div>
             </div>
         @endforeach
@@ -37,5 +32,43 @@
     </form>
 </div>
 @endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.btn-add-set').forEach(button => {
+        button.addEventListener('click', function () {
+            let exerciseId = this.getAttribute('data-exercise-id');
+            let exerciseDiv = document.getElementById('exercise-' + exerciseId);
+            let setCount = exerciseDiv.querySelectorAll('.set-group').length + 1;
+            let newSet = document.createElement('div');
+            newSet.classList.add('set-group', 'mb-3');
+            newSet.innerHTML = `
+                <label>Set ${setCount}</label>
+                <div class="row">
+                    <div class="col-md-6">
+                        <input type="number" name="reps[${exerciseId}][]" class="form-control" placeholder="Reps" required>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="number" name="weight[${exerciseId}][]" class="form-control" placeholder="Weight" required>
+                    </div>
+                    <div class="col-md-12 mt-2">
+                        <button type="button" class="btn btn-danger remove-set">Remove Set</button>
+                    </div>
+                </div>
+            `;
+            exerciseDiv.appendChild(newSet);
+            
+            // Add event listener to the remove button
+            newSet.querySelector('.remove-set').addEventListener('click', function() {
+                this.parentElement.parentElement.remove(); // Remove the set group div
+            });
+        });
+    });
+});
+
+</script>
+@endsection
+
 
 

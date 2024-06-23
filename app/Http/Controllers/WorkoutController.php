@@ -1,7 +1,5 @@
 <?php
 
-// app/Http/Controllers/WorkoutController.php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -17,6 +15,39 @@ class WorkoutController extends Controller
         $workoutTypes = WorkoutType::all();
         return view('workouts.index', compact('workoutTypes'));
     }
+
+    public function store(Request $request)
+    {
+        Log::info('Request received', $request->all());
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $workoutType = WorkoutType::create([
+            'name' => $request->name,
+        ]);
+
+        Log::info('Workout created', ['workout' => $workoutType]);
+
+        return response()->json([
+            'success' => true,
+            'workout' => $workoutType,
+        ]);
+    }
+
+    public function show($id)
+    {
+        $workoutSession = WorkoutSession::findOrFail($id);
+
+        // Debugging statements
+        dd($workoutSession->toArray()); // Check if workout_type_id exists and has a value
+
+        $workoutType = $workoutSession->workoutType; // Ensure this line is correct
+
+        return view('workouts.show', compact('workoutSession', 'workoutType'));
+    }
+    
 
     public function showWorkout(WorkoutType $workoutType)
     {
@@ -54,24 +85,28 @@ class WorkoutController extends Controller
             'duration' => $request->duration,
             'intensity' => $request->intensity,
         ]);
-
-        foreach ($workoutType->exercises as $exercise) {
-            $session->exercises()->attach($exercise->id, [
-                'sets' => $request->sets[$exercise->id],
-                'reps' => $request->reps[$exercise->id],
-                'weight' => $request->weight[$exercise->id],
-            ]);
+    
+        foreach ($request->reps as $exerciseId => $reps) {
+            foreach ($reps as $index => $rep) {
+                $session->exercises()->attach($exerciseId, [
+                    'set_number' => $index + 1,
+                    'reps' => $rep,
+                    'weight' => $request->weight[$exerciseId][$index],
+                ]);
+            }
         }
-
+    
         return redirect()->route('workouts.showWorkoutSessions');
     }
+    
 
     public function showWorkoutSessions()
     {
         $workoutSessions = WorkoutSession::with('workout_type', 'exercises')->where('user_id', Auth::id())->get();
         return view('workouts.sessions', compact('workoutSessions'));
     }
+
+
+    
 }
-
-
 

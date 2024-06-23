@@ -29,7 +29,6 @@ Route::post('workouts/{workoutType}/start', [WorkoutController::class, 'saveWork
 Route::get('workout_sessions', [WorkoutController::class, 'showWorkoutSessions'])->name('workouts.showWorkoutSessions');
 
 
-
 // Make sure 'ProfileController' is used correctly in the route definition
 Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index')->middleware('auth');
 
@@ -45,4 +44,20 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard
 
 
 
+
+Route::get('/', function () {
+    return view('home');
+})->name('home');
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth'])->name('dashboard');
+
+// Workouts routes
+Route::resource('workouts', WorkoutController::class)->middleware('auth');
+
+// Exercises routes
+Route::resource('exercises', ExerciseController::class)->middleware('auth');
+
+// Authentication routes provided by Breeze
 require __DIR__.'/auth.php';
