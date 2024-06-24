@@ -1,7 +1,5 @@
 <?php
 
-// database/migrations/yyyy_mm_dd_hhmmss_create_workout_types_table.php
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,6 +11,7 @@ class CreateWorkoutTypesTable extends Migration
         Schema::create('workout_types', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -22,3 +21,4 @@ class CreateWorkoutTypesTable extends Migration
         Schema::dropIfExists('workout_types');
     }
 }
+

@@ -12,10 +12,11 @@ class CreateExercisesTable extends Migration
             $table->id();
             $table->string('name');
             $table->text('description');
-            $table->string('equipment_used')->nullable();
-            $table->integer('rest_period')->nullable();
+            $table->string('equipment_used');
+            $table->string('rest_period');
             $table->string('difficulty');
             $table->string('target_body_part');
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -25,5 +26,3 @@ class CreateExercisesTable extends Migration
         Schema::dropIfExists('exercises');
     }
 }
-
-

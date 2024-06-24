@@ -1,22 +1,19 @@
 <?php
 
-// database/seeders/WorkoutTypesSeeder.php
-
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\WorkoutType;
+use Illuminate\Support\Facades\DB;
 
 class WorkoutTypesSeeder extends Seeder
 {
     public function run()
     {
-        $workoutTypes = ['Push', 'Pull', 'Legs'];
-
-        foreach ($workoutTypes as $type) {
-            WorkoutType::create(['name' => $type]);
-        }
+        DB::table('workout_types')->insert([
+            ['id' => 1, 'name' => 'Push Workout', 'user_id' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 2, 'name' => 'Pull Workout', 'user_id' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 3, 'name' => 'Legs Workout', 'user_id' => null, 'created_at' => now(), 'updated_at' => now()],
+        ]);
     }
 }
-
 

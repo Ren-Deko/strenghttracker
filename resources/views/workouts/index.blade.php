@@ -4,12 +4,30 @@
 <div class="container">
     <h1>Workouts</h1>
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createWorkoutModal">Create New Workout</button>
+    <a href="{{ route('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+
+    <h2>Shared Workouts</h2>
     <ul class="list-group mt-3">
-        @foreach ($workoutTypes as $type)
+        @foreach ($sharedWorkouts as $type)
             <li class="list-group-item">
                 {{ $type->name }}
                 <a href="{{ route('workouts.showWorkout', $type->id) }}" class="btn btn-sm btn-success float-end">Show Workout</a>
                 <a href="{{ route('workouts.startWorkout', $type->id) }}" class="btn btn-sm btn-primary float-end me-2">Start Workout</a>
+            </li>
+        @endforeach
+    </ul>
+    <h2>Your Workouts</h2>
+    <ul class="list-group mt-3">
+        @foreach ($userWorkouts as $type)
+            <li class="list-group-item">
+                {{ $type->name }}
+                <a href="{{ route('workouts.showWorkout', $type->id) }}" class="btn btn-sm btn-success float-end">Show Workout</a>
+                <a href="{{ route('workouts.startWorkout', $type->id) }}" class="btn btn-sm btn-primary float-end me-2">Start Workout</a>
+                <form action="{{ route('workouts.destroy', $type->id) }}" method="POST" class="float-end me-2">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
             </li>
         @endforeach
     </ul>
@@ -44,7 +62,7 @@ document.getElementById('createWorkoutForm').addEventListener('submit', function
     event.preventDefault();
     let form = event.target;
     let formData = new FormData(form);
-    
+
     fetch("{{ route('workouts.store') }}", {
         method: 'POST',
         headers: {
@@ -57,7 +75,7 @@ document.getElementById('createWorkoutForm').addEventListener('submit', function
         if(data.success) {
             let newWorkout = document.createElement('li');
             newWorkout.classList.add('list-group-item');
-            newWorkout.innerHTML = `${data.workout.name} 
+            newWorkout.innerHTML = `${data.workout.name}
                 <a href="{{ url('workouts') }}/${data.workout.id}/exercises" class="btn btn-sm btn-success float-end">Show Workout</a>
                 <a href="{{ url('workouts') }}/${data.workout.id}/start" class="btn btn-sm btn-primary float-end me-2">Start Workout</a>`;
             document.querySelector('.list-group').appendChild(newWorkout);
@@ -70,6 +88,8 @@ document.getElementById('createWorkoutForm').addEventListener('submit', function
 });
 </script>
 @endsection
+
+
 
 
 

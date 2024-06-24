@@ -20,13 +20,19 @@ Route::delete('exercises/{id}', [ExerciseController::class, 'destroy'])->name('e
 
 use App\Http\Controllers\WorkoutController;
 
-Route::resource('workouts', WorkoutController::class);
-Route::get('workouts/{workoutType}/exercises', [WorkoutController::class, 'showWorkout'])->name('workouts.showWorkout');
-Route::post('workouts/{workoutType}/exercises', [WorkoutController::class, 'addExercise'])->name('workouts.addExercise');
-Route::delete('workouts/{workoutType}/exercises/{exercise}', [WorkoutController::class, 'removeExercise'])->name('workouts.removeExercise');
-Route::get('workouts/{workoutType}/start', [WorkoutController::class, 'startWorkout'])->name('workouts.startWorkout');
-Route::post('workouts/{workoutType}/start', [WorkoutController::class, 'saveWorkoutSession'])->name('workouts.saveWorkoutSession');
-Route::get('workout_sessions', [WorkoutController::class, 'showWorkoutSessions'])->name('workouts.showWorkoutSessions');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/workouts', [WorkoutController::class, 'index'])->name('workouts.index');
+    Route::post('/workouts', [WorkoutController::class, 'store'])->name('workouts.store');
+    Route::get('/workouts/{workoutType}/exercises', [WorkoutController::class, 'showWorkout'])->name('workouts.showWorkout');
+    Route::post('/workouts/{workoutType}/add-exercise', [WorkoutController::class, 'addExercise'])->name('workouts.addExercise');
+    Route::delete('/workouts/{workoutType}/remove-exercise/{exercise}', [WorkoutController::class, 'removeExercise'])->name('workouts.removeExercise');
+    Route::get('/workouts/{workoutType}/start', [WorkoutController::class, 'startWorkout'])->name('workouts.startWorkout');
+    Route::post('/workouts/{workoutType}/save-session', [WorkoutController::class, 'saveWorkoutSession'])->name('workouts.saveWorkoutSession');
+    Route::get('/workout-sessions', [WorkoutController::class, 'showWorkoutSessions'])->name('workouts.showWorkoutSessions');
+    Route::delete('/workouts/{workoutType}', [WorkoutController::class, 'destroy'])->name('workouts.destroy');
+});
+
+Auth::routes();
 
 
 // Make sure 'ProfileController' is used correctly in the route definition
@@ -61,3 +67,6 @@ Route::resource('exercises', ExerciseController::class)->middleware('auth');
 
 // Authentication routes provided by Breeze
 require __DIR__.'/auth.php';
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

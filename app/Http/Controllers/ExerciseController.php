@@ -2,92 +2,75 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Exercise;
 use Illuminate\Http\Request;
+use App\Models\Exercise;
+use Illuminate\Support\Facades\Auth;
 
 class ExerciseController extends Controller
 {
-    public function workout_sessions()
-    {
-        return $this->belongsToMany(WorkoutSession::class, 'exercise_workout')->withPivot('sets', 'reps', 'weight');
-    }
-
-    public function workout_types()
-    {
-        return $this->belongsToMany(WorkoutType::class, 'exercise_workout');
-    }
-
-    /**
-     * Display a listing of the exercises.
-     */
     public function index()
     {
-        $exercises = Exercise::all();
+        // Fetch exercises created by the user and shared exercises
+        $exercises = Exercise::where('user_id', Auth::id())
+                        ->orWhereNull('user_id')
+                        ->get();
+
         return view('exercises.index', compact('exercises'));
     }
 
-    /**
-     * Show the form for creating a new exercise.
-     */
-    public function create()
-    {
-        return view('exercises.create');
-    }
-
-    /**
-     * Store a newly created exercise in the database.
-     */
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
-            'equipment_used' => 'nullable|string',
-            'rest_period' => 'nullable|integer',
+            'equipment_used' => 'required|string',
+            'rest_period' => 'required|integer',
             'difficulty' => 'required|string',
             'target_body_part' => 'required|string',
         ]);
 
-        Exercise::create($request->all());
+        Exercise::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'equipment_used' => $request->equipment_used,
+            'rest_period' => $request->rest_period,
+            'difficulty' => $request->difficulty,
+            'target_body_part' => $request->target_body_part,
+            'user_id' => Auth::id(),
+        ]);
 
-        return redirect()->route('exercises.index')->with('success', 'Exercise added successfully.');
+        return redirect()->route('exercises.index')->with('success', 'Exercise created successfully.');
     }
 
-    /**
-     * Show the form for editing the specified exercise.
-     */
-    public function edit($id)
+    public function edit(Exercise $exercise)
     {
-        $exercise = Exercise::findOrFail($id);
+        $this->authorize('update', $exercise);
+
         return view('exercises.edit', compact('exercise'));
     }
 
-    /**
-     * Update the specified exercise in the database.
-     */
-    public function update(Request $request, $id)
+    public function update(Request $request, Exercise $exercise)
     {
+        $this->authorize('update', $exercise);
+
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
-            'equipment_used' => 'nullable|string',
-            'rest_period' => 'nullable|integer',
+            'equipment_used' => 'required|string',
+            'rest_period' => 'required|integer',
             'difficulty' => 'required|string',
             'target_body_part' => 'required|string',
         ]);
 
-        $exercise = Exercise::findOrFail($id);
         $exercise->update($request->all());
 
         return redirect()->route('exercises.index')->with('success', 'Exercise updated successfully.');
     }
 
-    /**
-     * Remove the specified exercise from the database.
-     */
-    public function destroy($id)
+    public function destroy(Exercise $exercise)
     {
-        $exercise = Exercise::findOrFail($id);
+        $this->authorize('delete', $exercise);
+
         $exercise->delete();
 
         return redirect()->route('exercises.index')->with('success', 'Exercise deleted successfully.');

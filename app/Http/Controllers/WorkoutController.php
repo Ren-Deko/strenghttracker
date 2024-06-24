@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -7,13 +6,15 @@ use App\Models\WorkoutType;
 use App\Models\WorkoutSession;
 use App\Models\Exercise;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class WorkoutController extends Controller
 {
     public function index()
     {
-        $workoutTypes = WorkoutType::all();
-        return view('workouts.index', compact('workoutTypes'));
+        $sharedWorkouts = WorkoutType::shared()->get();
+        $userWorkouts = WorkoutType::userSpecific()->get();
+        return view('workouts.index', compact('sharedWorkouts', 'userWorkouts'));
     }
 
     public function store(Request $request)
@@ -26,6 +27,7 @@ class WorkoutController extends Controller
 
         $workoutType = WorkoutType::create([
             'name' => $request->name,
+            'user_id' => Auth::id(),
         ]);
 
         Log::info('Workout created', ['workout' => $workoutType]);
@@ -38,26 +40,27 @@ class WorkoutController extends Controller
 
     public function show($id)
     {
-        $workoutSession = WorkoutSession::findOrFail($id);
+        $workoutSession = WorkoutSession::where('user_id', Auth::id())->findOrFail($id);
 
-        // Debugging statements
-        dd($workoutSession->toArray()); // Check if workout_type_id exists and has a value
-
-        $workoutType = $workoutSession->workoutType; // Ensure this line is correct
+        $workoutType = $workoutSession->workoutType;
 
         return view('workouts.show', compact('workoutSession', 'workoutType'));
     }
-    
 
     public function showWorkout(WorkoutType $workoutType)
     {
+        $this->authorize('view', $workoutType);
+
         $workoutType->load('exercises');
-        $exercises = Exercise::all();
-        return view('workouts.exercises', compact('workoutType', 'exercises'));
+        $sharedExercises = Exercise::shared()->get();
+        $userExercises = Exercise::userSpecific()->get();
+        return view('workouts.exercises', compact('workoutType', 'sharedExercises', 'userExercises'));
     }
 
     public function addExercise(Request $request, WorkoutType $workoutType)
     {
+        $this->authorize('update', $workoutType);
+
         $workoutType->exercises()->attach($request->exercise_id);
 
         return redirect()->route('workouts.showWorkout', $workoutType->id);
@@ -65,6 +68,8 @@ class WorkoutController extends Controller
 
     public function removeExercise(WorkoutType $workoutType, Exercise $exercise)
     {
+        $this->authorize('update', $workoutType);
+
         $workoutType->exercises()->detach($exercise->id);
 
         return redirect()->route('workouts.showWorkout', $workoutType->id);
@@ -72,12 +77,16 @@ class WorkoutController extends Controller
 
     public function startWorkout(WorkoutType $workoutType)
     {
+        $this->authorize('view', $workoutType);
+
         $workoutType->load('exercises');
         return view('workouts.start', compact('workoutType'));
     }
 
     public function saveWorkoutSession(Request $request, WorkoutType $workoutType)
     {
+        $this->authorize('view', $workoutType);
+
         $session = WorkoutSession::create([
             'workout_type_id' => $workoutType->id,
             'user_id' => Auth::id(),
@@ -85,7 +94,7 @@ class WorkoutController extends Controller
             'duration' => $request->duration,
             'intensity' => $request->intensity,
         ]);
-    
+
         foreach ($request->reps as $exerciseId => $reps) {
             foreach ($reps as $index => $rep) {
                 $session->exercises()->attach($exerciseId, [
@@ -95,18 +104,29 @@ class WorkoutController extends Controller
                 ]);
             }
         }
-    
+
         return redirect()->route('workouts.showWorkoutSessions');
     }
-    
 
     public function showWorkoutSessions()
     {
-        $workoutSessions = WorkoutSession::with('workout_type', 'exercises')->where('user_id', Auth::id())->get();
+        $workoutSessions = WorkoutSession::with('workoutType', 'exercises')
+                            ->where('user_id', Auth::id())
+                            ->get();
         return view('workouts.sessions', compact('workoutSessions'));
     }
 
+    public function destroy(WorkoutType $workoutType)
+    {
+        $this->authorize('delete', $workoutType);
 
-    
+        $workoutType->delete();
+
+        return redirect()->route('workouts.index')->with('success', 'Workout deleted successfully.');
+    }
 }
+
+
+
+
 

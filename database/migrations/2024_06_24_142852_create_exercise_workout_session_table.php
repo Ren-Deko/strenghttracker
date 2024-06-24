@@ -4,11 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateExerciseWorkoutDetailsTable extends Migration
+class CreateExerciseWorkoutSessionTable extends Migration
 {
     public function up()
     {
-        Schema::create('exercise_workout_details', function (Blueprint $table) {
+        Schema::create('exercise_workout_session', function (Blueprint $table) {
             $table->id();
             $table->foreignId('workout_session_id')->constrained()->onDelete('cascade');
             $table->foreignId('exercise_id')->constrained()->onDelete('cascade');
@@ -21,7 +21,7 @@ class CreateExerciseWorkoutDetailsTable extends Migration
 
     public function down()
     {
-        Schema::dropIfExists('exercise_workout_details');
+        Schema::dropIfExists('exercise_workout_session');
     }
 }
 
