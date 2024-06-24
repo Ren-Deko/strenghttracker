@@ -10,12 +10,15 @@ class CreateWorkoutSessionsTable extends Migration
     {
         Schema::create('workout_sessions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('workout_type_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->timestamp('workout_date');
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('workout_type_id');
+            $table->date('workout_date'); // Ensure this is a date type
             $table->integer('duration')->nullable();
             $table->string('intensity')->nullable();
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('workout_type_id')->references('id')->on('workout_types')->onDelete('cascade');
         });
     }
 

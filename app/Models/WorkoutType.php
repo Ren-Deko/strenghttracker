@@ -31,10 +31,13 @@ class WorkoutType extends Model
     {
         return $query->where('user_id', Auth::id());
     }
-    public function sessions()
+    public function workoutSessions()
     {
         return $this->hasMany(WorkoutSession::class);
     }
+    
+
+    
 }
 
 

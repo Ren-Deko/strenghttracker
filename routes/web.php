@@ -3,7 +3,10 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ExerciseController;
+use App\Http\Controllers\WorkoutController;
 
+use App\Http\Controllers\WorkoutSessionController;
+use App\Http\Controllers\DashboardController;
 
 
 Route::get('/', function () {
@@ -17,8 +20,24 @@ Route::put('exercises/{id}', [ExerciseController::class, 'update'])->name('exerc
 Route::delete('exercises/{id}', [ExerciseController::class, 'destroy'])->name('exercises.destroy')->middleware('auth');
 
 
+// Workout Session Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/workout_sessions', [WorkoutSessionController::class, 'index'])->name('workout_sessions.index');
+    Route::post('/workout_sessions', [WorkoutSessionController::class, 'store'])->name('workout_sessions.store');
+    Route::get('/workout_sessions/{id}', [WorkoutSessionController::class, 'show'])->name('workout_sessions.show');
+    Route::get('/workout_sessions/compare', [WorkoutSessionController::class, 'compare'])->name('workout_sessions.compare');
+    Route::post('/workout_sessions/compare', [WorkoutSessionController::class, 'compare'])->name('workout_sessions.compare_results');
+});
 
-use App\Http\Controllers\WorkoutController;
+Route::get('/dashboard/max-weights', [DashboardController::class, 'maxWeights'])->name('dashboard.max_weights');
+
+Route::get('/workouts/compare', [WorkoutSessionController::class, 'showCompareForm'])->name('workouts.compare.form');
+Route::get('/workouts/compare/results', [WorkoutSessionController::class, 'compareWorkouts'])->name('workouts.compare');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/max_weights', [DashboardController::class, 'maxWeights'])->name('dashboard.max_weights');
+});
+
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/workouts', [WorkoutController::class, 'index'])->name('workouts.index');

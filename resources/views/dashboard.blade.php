@@ -25,6 +25,9 @@
     <h1>Welcome to Your Dashboard, {{ Auth::user()->name }}!</h1>
     <a href="{{ route('workouts.index') }}" class="btn btn-primary">Workouts</a>
     <a href="{{ route('exercises.index') }}" class="btn btn-secondary">Exercises</a>
+    <a href="{{ route('workout_sessions.index') }}" class="btn btn-primary">My Past Workouts</a>
+    <a href="{{ route('workouts.compare.form') }}" class="btn btn-primary">Compare Workouts</a>
+    <a href="{{ route('dashboard.max_weights') }}" class="btn btn-primary">View Max Weights</a>
     <a href="{{ route('logout') }}"
        class="btn btn-danger"
        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

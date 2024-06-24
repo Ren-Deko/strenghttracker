@@ -105,7 +105,7 @@ class WorkoutController extends Controller
             }
         }
 
-        return redirect()->route('workouts.showWorkoutSessions');
+        return redirect()->route('workouts.index')->with('success', 'Workout session saved successfully.');
     }
 
     public function showWorkoutSessions()
@@ -124,6 +124,8 @@ class WorkoutController extends Controller
 
         return redirect()->route('workouts.index')->with('success', 'Workout deleted successfully.');
     }
+
+    
 }
 
 
